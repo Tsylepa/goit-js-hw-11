@@ -15,12 +15,13 @@ const options = {
 };
 const observer = new IntersectionObserver(onInfinityLoad, options);
 let lightbox = new SimpleLightbox('.gallery a', {
-  CaptionsData: 'alt',
+  captionsData: 'alt',
   captionDelay: '250',
 });
 let page = 1;
 
 Notiflix.Notify.init({
+  timeout: 1500,
   borderRadius: '4px',
 });
 
@@ -31,9 +32,10 @@ function onSubmit(e) {
 
   gallery.innerHTML = '';
 
-  fetchImages()
+  fetchImages((page = 1))
     .then(({ data }) => {
-      if (data.totalHits === 0) throw new Error();
+      if (data.hits.length === 0) throw new Error();
+
       createMarkup(data);
       Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
       observer.observe(guard);
@@ -45,7 +47,7 @@ function onSubmit(e) {
     );
 }
 
-async function fetchImages(page = 1) {
+async function fetchImages(page) {
   try {
     return await axios.get(
       `${BASE_URL}?key=${KEY}&q=${form.searchQuery.value}&page=${page}&per_page=40`
@@ -101,17 +103,18 @@ function onInfinityLoad(entries) {
       page += 1;
       fetchImages(page)
         .then(({ data }) => {
-          createMarkup(data);
           if (data.hits.length === 0) {
-            observer.unobserve;
+            observer.unobserve(guard);
             throw new Error();
           }
+
+          createMarkup(data);
         })
         .catch(error =>
           Notiflix.Notify.info(
             "We're sorry, but you've reached the end of search results.",
             {
-              position: 'right-bottom',
+              position: 'center-bottom',
             }
           )
         );
