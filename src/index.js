@@ -28,24 +28,24 @@ Notiflix.Notify.init({
 
 form.addEventListener('submit', onSubmit);
 
-function onSubmit(e) {
+async function onSubmit(e) {
   e.preventDefault();
 
   gallery.innerHTML = '';
 
-  fetchImages((page = 1))
-    .then(({ data }) => {
-      if (data.hits.length === 0) throw new Error();
+  try {
+    const { data } = await fetchImages((page = 1));
+    const { hits, totalHits } = data;
 
-      createMarkup(data);
-      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
-      observer.observe(guard);
-    })
-    .catch(error =>
-      Notiflix.Notify.failure(
-        'Sorry, there are no images matching your search query. Please try again.'
-      )
+    if (hits.length === 0) throw new Error();
+    createMarkup(data);
+    Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
+    observer.observe(guard);
+  } catch (error) {
+    Notiflix.Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
     );
+  }
 }
 
 async function fetchImages(page) {
@@ -104,24 +104,28 @@ function createMarkup({ hits }) {
 function onInfinityLoad(entries) {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      page += 1;
-      fetchImages(page)
-        .then(({ data }) => {
-          if (data.hits.length === 0) {
-            observer.unobserve(guard);
-            throw new Error();
-          }
-
-          createMarkup(data);
-        })
-        .catch(error =>
-          Notiflix.Notify.info(
-            "We're sorry, but you've reached the end of search results.",
-            {
-              position: 'center-bottom',
-            }
-          )
-        );
+      loadMore();
     }
   });
+}
+
+async function loadMore() {
+  try {
+    page += 1;
+    const { data } = await fetchImages(page);
+
+    if (data.hits.length === 0) {
+      observer.unobserve(guard);
+      throw new Error();
+    }
+
+    createMarkup(data);
+  } catch (error) {
+    Notiflix.Notify.info(
+      "We're sorry, but you've reached the end of search results.",
+      {
+        position: 'center-bottom',
+      }
+    );
+  }
 }
