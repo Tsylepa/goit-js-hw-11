@@ -8,6 +8,7 @@ const KEY = '32917365-5bd31ba6b729a0861d5d37e11';
 const form = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
 const guard = document.querySelector('.gallery-guard');
+const loader = document.querySelector('.loader');
 const options = {
   root: null,
   rootMargin: '300px',
@@ -49,11 +50,14 @@ function onSubmit(e) {
 
 async function fetchImages(page) {
   try {
+    loader.classList.remove('is-hidden');
     return await axios.get(
       `${BASE_URL}?key=${KEY}&q=${form.searchQuery.value}&page=${page}&per_page=40`
     );
   } catch (error) {
     console.log(error);
+  } finally {
+    loader.classList.add('is-hidden');
   }
 }
 
