@@ -1,1 +1,109 @@
+:root {
+  --timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-duration: 250ms;
+}
 
+body {
+  font-family: 'Sofia Sans', sans-serif;
+  background-color: #525252;
+}
+
+.search-form {
+  top: 0;
+  left: 0;
+  position: fixed;
+  width: 100vw;
+  padding: 8px 0;
+  text-align: center;
+  background-color: #2a2a2a;
+  box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.search-form input,
+.search-form button {
+  padding: 6px;
+  border-radius: 6px;
+  outline: none;
+  font: inherit;
+  font-size: 16px;
+  text-transform: lowercase;
+}
+
+.search-form input {
+  border: 1px solid #878787;
+  background: transparent;
+  color: #dbdbdb;
+  transition: box-shadow var(--animation-duration) var(--timing-function);
+}
+
+.search-form input:focus {
+  box-shadow: inset 0px 0px 20px 3px rgba(0, 0, 0, 0.3);
+}
+
+.search-form button {
+  border: none;
+  background-color: #ffd500;
+  transition: background-color var(--animation-duration) var(--timing-function);
+}
+
+.search-form button:hover {
+  background-color: #ffc800;
+}
+
+.gallery {
+  display: grid;
+  max-width: 1140px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-gap: 8px;
+  justify-content: center;
+  margin-top: 60px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gallery__image {
+  display: block;
+  height: 180px;
+  width: 100%;
+  object-fit: cover;
+  box-shadow: 0px 0px 10px 3px rgba(0, 0, 0, 0.5);
+}
+
+.gallery__link {
+  position: relative;
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  color: inherit;
+  background-color: #2a2a2a;
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.2),
+    0px 1px 1px 0px rgba(0, 0, 0, 0.14), 0px 2px 1px -1px rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+  transition: transform var(--animation-duration) var(--timing-function);
+}
+
+.gallery__link:hover {
+  cursor: zoom-in;
+  transform: scale(1.03);
+}
+
+.info {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  text-transform: lowercase;
+  font-size: 14px;
+  color: #878787;
+}
+
+.info-item {
+  margin: 4px 0;
+}
+
+.info b {
+  display: block;
+  color: #4f4f4f;
+}

@@ -1,67 +1,120 @@
 import axios from 'axios';
 import SimpleLightbox from 'simplelightbox';
-import styles from 'simplelightbox/dist/simple-lightbox.min.css';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 import Notiflix from 'notiflix';
 
 const BASE_URL = 'https://pixabay.com/api';
 const KEY = '32917365-5bd31ba6b729a0861d5d37e11';
-const search = document.querySelector('.js-search');
-const form = document.querySelector('.js-searchform');
+const form = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
-
-// form.addEventListener('submit', onSubmit);
-new SimpleLightbox('.gallery a', {
-  aptionsData: 'alt',
+const guard = document.querySelector('.gallery-guard');
+const options = {
+  root: null,
+  rootMargin: '300px',
+  threshold: 1.0,
+};
+const observer = new IntersectionObserver(onInfinityLoad, options);
+let lightbox = new SimpleLightbox('.gallery a', {
+  CaptionsData: 'alt',
   captionDelay: '250',
 });
-// function onSubmit(e) {
-//   e.preventDefault();
+let page = 1;
 
-//   fetchImages().then(async response => await showResult(response.data));
-// }
+Notiflix.Notify.init({
+  borderRadius: '4px',
+});
 
-// async function fetchImages() {
-//   try {
-//     return await axios.get(`${BASE_URL}?key=${KEY}&q=${search.value}`);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
+form.addEventListener('submit', onSubmit);
 
-// function showResult({ hits }) {
-//   const markup = [];
+function onSubmit(e) {
+  e.preventDefault();
 
-//   hits.forEach(
-//     ({
-//       webformatURL,
-//       largeImageURL,
-//       tags,
-//       likes,
-//       views,
-//       comments,
-//       downloads,
-//     }) =>
-//       markup.push(
-//         `<a href="${largeImageURL}"><div class="photo-card">
-//         <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-//         <div class="info">
-//           <p class="info-item">
-//             <b>Likes: ${likes}</b>
-//           </p>
-//           <p class="info-item">
-//             <b>Views: ${views}</b>
-//           </p>
-//           <p class="info-item">
-//             <b>Comments: ${comments}</b>
-//           </p>
-//           <p class="info-item">
-//             <b>Downloads: ${downloads}</b>
-//           </p>
-//             </div>
-//         </div>
-//       </a>`
-//       )
-//   );
+  gallery.innerHTML = '';
 
-//   gallery.innerHTML = markup.join('');
-// }
+  fetchImages()
+    .then(({ data }) => {
+      if (data.totalHits === 0) throw new Error();
+      createMarkup(data);
+      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+      observer.observe(guard);
+    })
+    .catch(error =>
+      Notiflix.Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      )
+    );
+}
+
+async function fetchImages(page = 1) {
+  try {
+    return await axios.get(
+      `${BASE_URL}?key=${KEY}&q=${form.searchQuery.value}&page=${page}&per_page=40`
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function createMarkup({ hits }) {
+  const markup = [];
+
+  hits.forEach(
+    ({
+      webformatURL,
+      largeImageURL,
+      tags,
+      likes,
+      views,
+      comments,
+      downloads,
+    }) =>
+      markup.push(
+        `<a class="gallery__link" href="${largeImageURL}">
+            <div class="photo-card">
+              <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />
+              <div class="info">
+                <p class="info-item">
+                  <b>Likes:</b>${likes}
+                </p>
+                <p class="info-item">
+                  <b>Views:</b>${views}
+                </p>
+                <p class="info-item">
+                  <b>Comments:</b>${comments}
+                </p>
+                <p class="info-item">
+                  <b>Downloads:</b>${downloads}
+                </p>
+              </div>
+            </div>
+        </a>`
+      )
+  );
+
+  gallery.insertAdjacentHTML('beforeend', markup.join(''));
+  lightbox.refresh();
+}
+
+function onInfinityLoad(entries) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      page += 1;
+      fetchImages(page)
+        .then(({ data }) => {
+          createMarkup(data);
+          if (data.hits.length === 0) {
+            observer.unobserve;
+            throw new Error();
+          }
+        })
+        .catch(error =>
+          Notiflix.Notify.info(
+            "We're sorry, but you've reached the end of search results.",
+            {
+              position: 'right-bottom',
+            }
+          )
+        );
+    }
+  });
+}
