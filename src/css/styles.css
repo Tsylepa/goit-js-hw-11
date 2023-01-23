@@ -108,6 +108,16 @@ body {
   color: #4f4f4f;
 }
 
+.sl-overlay {
+  background-color: #000;
+}
+
+.sl-navigation button,
+.sl-counter,
+.sl-close {
+  color: #ffc800;
+}
+
 .loader {
   display: flex;
   position: relative;
