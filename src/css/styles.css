@@ -109,13 +109,13 @@ body {
 }
 
 .sl-overlay {
-  background-color: #000;
+  background-color: #000 !important;
 }
 
 .sl-navigation button,
 .sl-counter,
 .sl-close {
-  color: #ffc800;
+  color: #ffc800 !important;
 }
 
 .loader {
