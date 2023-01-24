@@ -4,7 +4,6 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 import Notiflix from 'notiflix';
 
 const BASE_URL = 'https://pixabay.com/api';
-const KEY = '32917365-5bd31ba6b729a0861d5d37e11';
 const form = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
 const guard = document.querySelector('.gallery-guard');
@@ -49,11 +48,16 @@ async function onSubmit(e) {
 }
 
 async function fetchImages(page) {
+  const searchParams = new URLSearchParams({
+    key: '32917365-5bd31ba6b729a0861d5d37e11',
+    q: form.searchQuery.value,
+    per_page: 40,
+    page: page,
+  });
+
   try {
     loader.classList.remove('is-hidden');
-    return await axios.get(
-      `${BASE_URL}?key=${KEY}&q=${form.searchQuery.value}&page=${page}&per_page=40`
-    );
+    return await axios.get(`${BASE_URL}?${searchParams}`);
   } catch (error) {
     console.log(error);
   } finally {
@@ -62,19 +66,17 @@ async function fetchImages(page) {
 }
 
 function createMarkup({ hits }) {
-  const markup = [];
-
-  hits.forEach(
-    ({
-      webformatURL,
-      largeImageURL,
-      tags,
-      likes,
-      views,
-      comments,
-      downloads,
-    }) =>
-      markup.push(
+  const markup = hits
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) =>
         `<a class="gallery__link" href="${largeImageURL}">
             <div class="photo-card">
               <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />
@@ -94,10 +96,10 @@ function createMarkup({ hits }) {
               </div>
             </div>
         </a>`
-      )
-  );
+    )
+    .join('');
 
-  gallery.insertAdjacentHTML('beforeend', markup.join(''));
+  gallery.insertAdjacentHTML('beforeend', markup);
   lightbox.refresh();
 }
 
